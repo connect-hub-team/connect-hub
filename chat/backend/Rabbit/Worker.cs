@@ -19,7 +19,7 @@ public class Worker : BackgroundService
     while (!stoppingToken.IsCancellationRequested)
     {
       var response = await _hub.Rpc(new Message(), PingHandler.Topic);
-      _logger.LogInformation("Ping at: {time} {text}", DateTimeOffset.Now, response.Text);
+      _logger.LogInformation("Ping at: {time} {text}", DateTimeOffset.Now, response?.Text);
       await Task.Delay(1000, stoppingToken);
     }
   }
