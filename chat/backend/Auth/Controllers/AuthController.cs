@@ -2,7 +2,9 @@ using System.Security.Claims;
 using Chat.Auth.Data;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
@@ -12,47 +14,87 @@ namespace Chat.Auth.Controllers;
 
 public class AuthController : Controller
 {
-  private readonly IOpenIddictScopeManager _manager;
-  private readonly AuthDbContext _context;
+  private readonly IOpenIddictApplicationManager _applicationManager;
+  private readonly IOpenIddictAuthorizationManager _authorizationManager;
+  private readonly IOpenIddictScopeManager _scopeManager;
+  private readonly SignInManager<User> _signInManager;
+  private readonly UserManager<User> _userManager;
 
-  public AuthController(AuthDbContext context, IOpenIddictScopeManager manager)
+  public AuthController(
+    IOpenIddictApplicationManager applicationManager,
+    IOpenIddictAuthorizationManager authorizationManager,
+    IOpenIddictScopeManager scopeManager,
+    SignInManager<User> signInManager,
+    UserManager<User> userManager)
   {
-    _context = context;
-    _manager = manager;
+    _applicationManager = applicationManager;
+    _authorizationManager = authorizationManager;
+    _scopeManager = scopeManager;
+    _signInManager = signInManager;
+    _userManager = userManager;
   }
 
   [Route("~/auth")]
-  public async Task<IResult> Authorize()
+  [IgnoreAntiforgeryToken]
+  public async Task<IActionResult> Authorize()
   {
-    var request = HttpContext.GetOpenIddictServerRequest();
+    var request = HttpContext.GetOpenIddictServerRequest() ??
+                  throw new InvalidOperationException("OIDC request can't be retrieved");
 
-    var identifier = (string?) request["identity_id"];
-    var user = await _context.FindAsync<User>(identifier);
-    if (user is null)
+    if (request.HasPrompt(Prompts.Login))
     {
-      return
-      Results.Challenge(
-        authenticationSchemes: new [] {OpenIddictServerAspNetCoreDefaults.AuthenticationScheme},
-        properties: new AuthenticationProperties(new Dictionary<string, string>
+      var prompt = string.Join(" ", request.GetPrompts().Remove(Prompts.Login));
+      
+      var parameters = Request.HasFormContentType ?
+        Request.Form.Where(parameter => parameter.Key != Parameters.Prompt).ToList() :
+        Request.Query.Where(parameter => parameter.Key != Parameters.Prompt).ToList();
+      
+      parameters.Add(new KeyValuePair<string, StringValues>(Parameters.Prompt, new(prompt)));
+
+      return Challenge(
+        authenticationSchemes: IdentityConstants.ApplicationScheme,
+        properties: new AuthenticationProperties()
         {
-          [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidRequest,
-          [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The specified identity is invalid."
-        }!));
+          RedirectUri = Request.PathBase + Request.Path + QueryString.Create(parameters)
+        }
+      );
     }
 
-    var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType);
-    identity.AddClaims(new[]
+    var result = await HttpContext.AuthenticateAsync(IdentityConstants.ApplicationScheme);
+    if (result == null || 
+        !result.Succeeded || 
+        (request.MaxAge != null && result.Properties?.IssuedUtc != null
+         && DateTimeOffset.UtcNow - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
     {
-      new Claim(Claims.Email, user.Email),
-      new Claim(Claims.Username, user.UserName),
-    });
+      if (request.HasPrompt(Prompts.None))
+        return Forbid(
+          authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+          properties: new AuthenticationProperties(new Dictionary<string, string>
+          {
+            [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.LoginRequired,
+            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "You need to login",
+          }!)
+        );
 
-    var principal = new ClaimsPrincipal(identity);
+      return Challenge(
+        authenticationSchemes: IdentityConstants.ApplicationScheme,
+        properties:new AuthenticationProperties()
+        {
+          RedirectUri = Request.PathBase + Request.Path + QueryString.Create(
+            Request.HasFormContentType ? Request.Form.ToList() : Request.Query.ToList())
+        }
+      );
+    }
+  
+    // find user
+    var user = _userManager.GetUserAsync(result.Principal) ??
+               throw new InvalidOperationException("Can't find user");
+    
+    // find application info
+    var application = await _applicationManager.FindByClientIdAsync(request.ClientId) ??
+                      throw new InvalidOperationException("Can't find client app info");
 
-    principal.SetScopes(request.GetScopes());
-    principal.SetResources(await _manager.ListResourcesAsync(principal.GetScopes()).ToListAsync());
 
-    return Results.SignIn(principal, properties: null, 
-      OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    return null;
   }
 }

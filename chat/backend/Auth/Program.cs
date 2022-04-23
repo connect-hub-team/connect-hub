@@ -1,3 +1,4 @@
+using Chat.Auth;
 using Chat.Auth.Data;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
@@ -14,12 +15,14 @@ builder.Services.AddQuartz(options =>
 
 builder.Services.AddQuartzHostedService(options =>
   options.WaitForJobsToComplete = true);
+builder.Services.AddHostedService<Worker>();
 
 
 // persistent storage
 builder.Services.AddDbContext<AuthDbContext>(options =>
 {
-  options.UseNpgsql("Server=127.0.0.1;Port=5432;Database=auth;User Id=auth;Password=password123;");
+  // TODO: fuck this shit
+  options.UseNpgsql("Server=127.0.0.1;Port=5432;Database=authdb;User Id=auth;Password=password123;"); 
   options.UseOpenIddict();
 });
 
@@ -50,36 +53,32 @@ builder.Services.AddOpenIddict()
 
     options
       .UseAspNetCore()
-      .EnableAuthorizationEndpointPassthrough();
+      .EnableAuthorizationEndpointPassthrough()
+      .EnableTokenEndpointPassthrough()
+      .EnableLogoutEndpointPassthrough();
   })
   .AddValidation(options =>
   {
     options.UseLocalServer();
-    //options.UseAspNetCore(); ДА ЕБАНЫЙ В РОТ
+    //options.UseAspNetCore(); // ДА ЕБАНЫЙ В РОТ
   });
 
 builder.Services.AddAuthorization();
+builder.Services.AddAuthentication();
+builder.Services.AddMvc();
 
 
 // Add services to the container.
+builder.Services.AddRazorPages();
+builder.Services.AddControllersWithViews();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-/*builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();*/
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-// if (app.Environment.IsDevelopment())
-// {
-//   app.UseSwagger();
-//   app.UseSwaggerUI();
-// }
 
 //app.UseHttpsRedirection();
 
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapControllers();
 

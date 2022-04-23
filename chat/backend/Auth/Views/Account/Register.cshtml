@@ -1,0 +1,41 @@
+@using Chat.Auth.Data.Dtos
+@model RegisterDto
+
+@{
+  Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>title</title>
+</head>
+<body>
+<div>
+  <form asp-action="Register">
+    <div>
+      <span>Email:</span>
+      <br/>
+      
+      <span>Login:</span>
+      <br/>
+      
+      <span>Password:</span>
+    </div>
+    <div>
+      <input type="text" asp-for="Email"/>
+      <br/>
+      
+      <input type="text" asp-for="UserName"/>
+      <br/>
+      
+      <input type="password" asp-for="Password" />
+      <br/>
+    </div>
+    
+    <input type="submit"/>
+  </form>
+</div>
+</body>
+</html>
