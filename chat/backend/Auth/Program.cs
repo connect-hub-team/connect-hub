@@ -1,7 +1,9 @@
 using Chat.Auth;
 using Chat.Auth.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,17 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
   // TODO: fuck this shit
   options.UseNpgsql("Server=127.0.0.1;Port=5432;Database=authdb;User Id=auth;Password=password123;"); 
   options.UseOpenIddict();
+});
+
+// add Identity
+builder.Services.AddDefaultIdentity<User>()
+  .AddEntityFrameworkStores<AuthDbContext>()
+  .AddDefaultTokenProviders();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+  options.ClaimsIdentity.UserNameClaimType = Claims.Name;
+  options.ClaimsIdentity.EmailClaimType = Claims.Email;
 });
 
 // configure OpenIddict
@@ -75,11 +88,16 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
+app.UseRouting();
 
 app.UseAuthorization();
 app.UseAuthentication();
 
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+  endpoints.MapRazorPages();
+  endpoints.MapControllers();
+});
 
 app.Run();

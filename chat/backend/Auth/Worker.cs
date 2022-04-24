@@ -16,17 +16,22 @@ public class Worker : IHostedService
     await using var scope = this._serviceProvider.CreateAsyncScope();
 
     var context = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
-    await context.Database.EnsureCreatedAsync();
+    await context.Database.EnsureCreatedAsync(cancellationToken);
     
     var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
 
     // add clients
-    if (await applicationManager.FindByClientIdAsync("angular-client") is null)
+    if (await applicationManager.FindByClientIdAsync("angular-client", cancellationToken) is null)
     {
       await applicationManager.CreateAsync(new OpenIddictApplicationDescriptor()
       {
         ClientId = "angular-client",
-        RedirectUris = {new Uri("https://localhost:8080")},
+        RedirectUris =
+        {
+          new Uri("https://localhost:8080"),
+          new Uri("http://localhost:8080"),
+          new Uri("http://localhost:7000")
+        },
         Permissions =
         {
           Permissions.Endpoints.Authorization,
@@ -46,13 +51,13 @@ public class Worker : IHostedService
 
     var scopeManager = scope.ServiceProvider.GetRequiredService<IOpenIddictScopeManager>();
     // add resources
-    if (await scopeManager.FindByNameAsync("chat") is null)
+    if (await scopeManager.FindByNameAsync("chat", cancellationToken) is null)
     {
       await scopeManager.CreateAsync(new OpenIddictScopeDescriptor()
       {
-        Name = "Chat",
-        Resources = {"Chat"}
-      });
+        Name = "chat",
+        Resources = {"chat"}
+      }, cancellationToken);
     }
 
   }
