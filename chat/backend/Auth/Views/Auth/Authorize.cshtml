@@ -1,8 +1,20 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@using Microsoft.Extensions.Primitives
+@using Chat.Auth.Data.Dtos
+@model AuthorizeDto
+<div class="jumbotron">
+  <h1>Authorization</h1>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+  <p class="lead text-left">Do you want to grant <strong>@Model.ApplicationName</strong> access to your data? (scopes requested: @Model.Scope)</p>
+
+  <form asp-controller="Auth" asp-action="Grant" method="post">
+    @* Flow the request parameters so they can be received by the Accept/Reject actions: *@
+    @foreach (var parameter in Context.Request.HasFormContentType ?
+      (IEnumerable<KeyValuePair<string, StringValues>>) Context.Request.Form : Context.Request.Query)
+    {
+      <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+    }
+
+    <input class="btn btn-lg btn-success" name="submit.Accept" type="submit" value="Yes" />
+    <input class="btn btn-lg btn-danger" name="submit.Deny" type="submit" value="No" />
+  </form>
 </div>

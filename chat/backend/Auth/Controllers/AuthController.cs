@@ -1,18 +1,20 @@
 using System.Security.Claims;
 using Chat.Auth.Data;
 using Chat.Auth.Data.Dtos;
+using Chat.Auth.Helpers;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Chat.Auth.Controllers;
 
+[Route("~/connect")]
 public class AuthController : Controller
 {
   private readonly IOpenIddictApplicationManager _applicationManager;
@@ -35,7 +37,7 @@ public class AuthController : Controller
     _userManager = userManager;
   }
 
-  [Route("~/auth")]
+  [Route("auth")]
   [IgnoreAntiforgeryToken]
   public async Task<IActionResult> Authorize()
   {
@@ -175,6 +177,137 @@ public class AuthController : Controller
     return null;
   }
 
+  [Authorize, FormValueRequired("submit.Deny")]
+  [HttpPost("auth"), ValidateAntiForgeryToken]
+  public IActionResult Deny() 
+    => Forbid(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+  [Authorize, FormValueRequired("submit.Accept")]
+  [HttpPost("auth"), ValidateAntiForgeryToken]
+  public async Task<IActionResult> Grant()
+  {
+    var request = HttpContext.GetOpenIddictServerRequest() ??
+      throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+
+    // Retrieve the profile of the logged in user.
+    var user = await _userManager.GetUserAsync(User) ??
+        throw new InvalidOperationException("The user details cannot be retrieved.");
+
+    // Retrieve the application details from the database.
+    var application = await _applicationManager.FindByClientIdAsync(request.ClientId) ??
+        throw new InvalidOperationException("Details concerning the calling client application cannot be found.");
+
+    // Retrieve the permanent authorizations associated with the user and the calling client application.
+    var authorizations = await _authorizationManager.FindAsync(
+        subject: await _userManager.GetUserIdAsync(user),
+        client : await _applicationManager.GetIdAsync(application),
+        status : Statuses.Valid,
+        type   : AuthorizationTypes.Permanent,
+        scopes : request.GetScopes()).ToListAsync();
+
+    // Note: the same check is already made in the other action but is repeated
+    // here to ensure a malicious user can't abuse this POST-only endpoint and
+    // force it to return a valid response without the external authorization.
+    if (!authorizations.Any() && await _applicationManager.HasConsentTypeAsync(application, ConsentTypes.External))
+    {
+        return Forbid(
+            authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+            properties: new AuthenticationProperties(new Dictionary<string, string>
+            {
+              [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.ConsentRequired,
+              [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
+                "The logged in user is not allowed to access this client application."
+            }!));
+    }
+
+    var principal = await _signInManager.CreateUserPrincipalAsync(user);
+
+    // Note: in this sample, the granted scopes match the requested scope
+    // but you may want to allow the user to uncheck specific scopes.
+    // For that, simply restrict the list of scopes before calling SetScopes.
+    principal.SetScopes(request.GetScopes());
+    principal.SetResources(await _scopeManager.ListResourcesAsync(principal.GetScopes()).ToListAsync());
+
+    // Automatically create a permanent authorization to avoid requiring explicit consent
+    // for future authorization or token requests containing the same scopes.
+    var authorization = authorizations.LastOrDefault();
+    if (authorization == null)
+    {
+        authorization = await _authorizationManager.CreateAsync(
+            principal: principal,
+            subject  : await _userManager.GetUserIdAsync(user),
+            client   : await _applicationManager.GetIdAsync(application) ?? "",
+            type     : AuthorizationTypes.Permanent,
+            scopes   : principal.GetScopes());
+    }
+
+    principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
+
+    principal.Claims.Select(claim => 
+      claim.SetDestinations(GetDestinations(claim, principal)));
+
+    // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
+    return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+  }
+
+  [HttpGet("logout")]
+  public IActionResult Logout() => View();
+
+  [ActionName(nameof(Logout)), HttpPost("logout"), ValidateAntiForgeryToken]
+  public async Task<IActionResult> LogoutPost()
+  {
+    await _signInManager.SignOutAsync();
+
+    return SignOut(
+      authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+      properties: new AuthenticationProperties { RedirectUri = "/"}
+    );
+  }
+
+  [HttpPost("token"), Produces("application/json")]
+  public async Task<IActionResult> Exchange()
+  {
+    var request = HttpContext.GetOpenIddictServerRequest()
+                  ?? throw new InvalidOperationException("OpenID context cannot be retrieved");
+
+    if (request.IsAuthorizationCodeGrantType() || request.IsRefreshTokenGrantType())
+    {
+      var principal = (await HttpContext.AuthenticateAsync(
+          OpenIddictServerAspNetCoreDefaults.AuthenticationScheme))
+        .Principal;
+
+      var user = await _userManager.GetUserAsync(principal);
+      if (user is null)
+        return Forbid(
+          authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+          properties: new AuthenticationProperties(new Dictionary<string, string?>
+          {
+            [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
+            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "User cannot longer log in"
+          })
+        );
+      
+      // checks that user can still sign in
+      if (!await _signInManager.CanSignInAsync(user))
+        return Forbid(
+          authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+          properties: new AuthenticationProperties(new Dictionary<string, string?>
+          {
+            [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
+            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "User cannot longer log in"
+          })
+        );
+
+      principal!.Claims.Select(claim 
+        => claim.SetDestinations(GetDestinations(claim, principal)));
+
+      return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+
+    throw new InvalidOperationException("The specified grant type is not supported");
+  }
+  
+  
   private IEnumerable<string> GetDestinations(Claim claim, ClaimsPrincipal principal)
   {
     switch (claim.Type)

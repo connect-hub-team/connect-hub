@@ -15,6 +15,7 @@ builder.Services.AddQuartz(options =>
   options.UseInMemoryStore();
 });
 
+// hosted services
 builder.Services.AddQuartzHostedService(options =>
   options.WaitForJobsToComplete = true);
 builder.Services.AddHostedService<Worker>();
@@ -29,6 +30,7 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 });
 
 // add Identity
+
 builder.Services.AddDefaultIdentity<User>()
   .AddEntityFrameworkStores<AuthDbContext>()
   .AddDefaultTokenProviders();
@@ -37,6 +39,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 {
   options.ClaimsIdentity.UserNameClaimType = Claims.Name;
   options.ClaimsIdentity.EmailClaimType = Claims.Email;
+  options.ClaimsIdentity.UserIdClaimType = Claims.Subject;
 });
 
 // configure OpenIddict
@@ -49,13 +52,15 @@ builder.Services.AddOpenIddict()
   .AddServer(options =>
   {
     options
-      .SetAuthorizationEndpointUris("/auth")
-      .SetTokenEndpointUris("/token");
+      .SetAuthorizationEndpointUris("/connect/auth")
+      .SetTokenEndpointUris("/connect/token");
 
     // use Authorization code flow
     // see: https://developer.okta.com/docs/concepts/oauth-openid/#authorization-code-flow
     // in future we could use other flows for auth purposes
-    options.AllowAuthorizationCodeFlow();
+    options
+      .AllowAuthorizationCodeFlow()
+      .AllowRefreshTokenFlow();
 
     // for tests here using a symmetric and hardcoded key
     // for prod we should use assymetric key (or even cert) with storage in
@@ -67,37 +72,43 @@ builder.Services.AddOpenIddict()
     options
       .UseAspNetCore()
       .EnableAuthorizationEndpointPassthrough()
+      .EnableStatusCodePagesIntegration()
       .EnableTokenEndpointPassthrough()
       .EnableLogoutEndpointPassthrough();
   })
   .AddValidation(options =>
   {
     options.UseLocalServer();
-    //options.UseAspNetCore(); // ДА ЕБАНЫЙ В РОТ
+    options.UseAspNetCore(); // ДА ЕБАНЫЙ В РОТ
   });
 
-builder.Services.AddAuthorization();
-builder.Services.AddAuthentication();
-builder.Services.AddMvc();
+builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
 
 
 // Add services to the container.
-builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews();
+// builder.Services.AddRazorPages();
+// builder.Services.AddControllersWithViews();
 
 
 var app = builder.Build();
 
+app.UseStaticFiles();
 app.UseHttpsRedirection();
+
 app.UseRouting();
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
+// app.MapControllerRoute(
+//   name: "default",
+//   pattern: "{controller}/{action=Index}/{id?}"
+// );
+app.UseMvc();
 
-app.UseEndpoints(endpoints =>
-{
-  endpoints.MapRazorPages();
-  endpoints.MapControllers();
-});
+// app.UseEndpoints(endpoints =>
+// {
+//   endpoints.MapRazorPages();
+//   endpoints.MapControllers();
+// });
 
 app.Run();
