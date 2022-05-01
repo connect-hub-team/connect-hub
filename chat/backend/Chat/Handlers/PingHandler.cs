@@ -2,7 +2,7 @@ using RabbitHub.Handlers;
 using Chat.Core.Dto;
 using RabbitHub;
 
-namespace Chat.Rabbit.Handlers;
+namespace Chat.Chat.Handlers;
 
 public class PingHandler : RpcHandler<PingDto>
 {

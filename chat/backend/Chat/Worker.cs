@@ -1,14 +1,14 @@
-using Chat.Rabbit.Handlers;
-using RabbitHub;
+using Chat.Chat.Handlers;
+using Rabbit = RabbitHub;
 
-namespace Chat.Rabbit;
+namespace Chat.Chat;
 
 public class Worker : BackgroundService
 {
   private readonly ILogger<Worker> _logger;
-  private readonly Hub _hub;
+  private readonly Rabbit.Hub _hub;
 
-  public Worker(ILogger<Worker> logger, Hub hub)
+  public Worker(ILogger<Worker> logger, Rabbit.Hub hub)
   {
     _logger = logger;
     _hub = hub;
@@ -18,7 +18,7 @@ public class Worker : BackgroundService
   {
     while (!stoppingToken.IsCancellationRequested)
     {
-      var response = await _hub.Rpc(new Message(), PingHandler.Topic);
+      var response = await _hub.Rpc(new Rabbit.Message(), PingHandler.Topic);
       _logger.LogInformation("Ping at: {time} {text}", DateTimeOffset.Now, response?.Text);
       await Task.Delay(1000, stoppingToken);
     }

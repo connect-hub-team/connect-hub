@@ -1,6 +1,6 @@
 ﻿{
   "profiles": {
-    "Rabbit": {
+    "Chat": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "environmentVariables": {
