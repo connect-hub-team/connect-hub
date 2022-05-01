@@ -1,4 +1,6 @@
-@inject SignInManager<IdentityUser> SignInManager
+@using Chat.Auth.Data
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject SignInManager<User> SignInManager
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }

@@ -1,6 +1,7 @@
 using Chat.Auth.Data;
 using Chat.Auth.Data.Dtos;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chat.Auth.Controllers;
@@ -10,16 +11,20 @@ namespace Chat.Auth.Controllers;
 public class AccountController : Controller
 {
   private readonly AuthDbContext _context;
+  private readonly SignInManager<User> _signInManager;
 
-  public AccountController(AuthDbContext context)
+  public AccountController(AuthDbContext context,
+    SignInManager<User> signInManager)
   {
     _context = context;
+    _signInManager = signInManager;
   }
 
   [AllowAnonymous]
   [HttpGet]
   [Route("register")]
   public ViewResult Register() => View();
+  
 
   [HttpPost]
   [Route("register")]

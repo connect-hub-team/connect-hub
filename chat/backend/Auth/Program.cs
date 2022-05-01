@@ -1,5 +1,6 @@
 using Chat.Auth;
 using Chat.Auth.Data;
+using Chat.Auth.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
@@ -30,7 +31,6 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 });
 
 // add Identity
-
 builder.Services.AddDefaultIdentity<User>()
   .AddEntityFrameworkStores<AuthDbContext>()
   .AddDefaultTokenProviders();
@@ -41,6 +41,8 @@ builder.Services.Configure<IdentityOptions>(options =>
   options.ClaimsIdentity.EmailClaimType = Claims.Email;
   options.ClaimsIdentity.UserIdClaimType = Claims.Subject;
 });
+
+builder.Services.AddEmailSender();
 
 // configure OpenIddict
 builder.Services.AddOpenIddict()
@@ -79,7 +81,7 @@ builder.Services.AddOpenIddict()
   .AddValidation(options =>
   {
     options.UseLocalServer();
-    options.UseAspNetCore(); // ДА ЕБАНЫЙ В РОТ
+    options.UseAspNetCore();
   });
 
 builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
@@ -99,10 +101,10 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-// app.MapControllerRoute(
-//   name: "default",
-//   pattern: "{controller}/{action=Index}/{id?}"
-// );
+app.MapControllerRoute(
+  name: "default",
+  pattern: "{controller=Account}/{action=Index}/{id?}"
+);
 app.UseMvc();
 
 // app.UseEndpoints(endpoints =>
