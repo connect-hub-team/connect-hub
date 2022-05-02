@@ -1,11 +1,20 @@
 {
 	"folders": [
     {
-      "path": "."
+      "path": ".",
     },
-    // {
-    //   "path": "chat/backend"
-    // }
+    {
+      "path": "auth",
+      "name": "auth"
+    },
+    {
+      "path": "chat/backend",
+      "name": "chat backend"
+    },
+    {
+      "path": "chat/frontend",
+      "name": "chat frontend"
+    }
 	],
 	"settings": {}
 }
