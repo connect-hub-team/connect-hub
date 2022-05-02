@@ -2,23 +2,43 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Rabbit (local)",
+            "name": "Chat (local)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Rabbit/bin/Debug/net6.0/Rabbit.dll",
+            "preLaunchTask": "build_chat",
+            "program": "${workspaceFolder}/Chat/bin/Debug/net6.0/Chat.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/Rabbit",
+            "cwd": "${workspaceFolder}/Chat",
             "envFile": "${workspaceFolder}/local.env"
         },
         {
-            "name": "Rabbit (dev)",
+            "name": "Chat (dev)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Rabbit/bin/Debug/net6.0/Rabbit.dll",
+            "preLaunchTask": "build_chat",
+            "program": "${workspaceFolder}/Chat/bin/Debug/net6.0/Chat.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/Rabbit",
+            "cwd": "${workspaceFolder}/Chat",
+            "envFile": "${workspaceFolder}/dev.env"
+        },
+        {
+            "name": "Api (local)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build_api",
+            "program": "${workspaceFolder}/Api/bin/Debug/net6.0/Api.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Api",
+            "envFile": "${workspaceFolder}/local.env"
+        },
+        {
+            "name": "Api (dev)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build_api",
+            "program": "${workspaceFolder}/Api/bin/Debug/net6.0/Api.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Api",
             "envFile": "${workspaceFolder}/dev.env"
         }
     ]

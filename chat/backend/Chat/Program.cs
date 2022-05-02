@@ -4,8 +4,6 @@ using Chat.Chat.Hub;
 using Core.Extensions;
 using FastConfig;
 using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 
 const string appId = "chat";
 var fastConfig = FastConfigClient.FromEnvironment(appId: appId);
@@ -31,9 +29,11 @@ var host = WebHost.CreateDefaultBuilder(args)
   .Configure(builder =>
   {
     builder.UseAuthentication();
-    builder.UseAuthorization();
 
     builder.UseRouting();
+
+    builder.UseAuthorization();
+
     builder.UseEndpoints(endpoints
       => endpoints.MapHub<ChatHub>("/ws"));
   })
