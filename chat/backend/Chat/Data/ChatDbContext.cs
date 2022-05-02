@@ -1,4 +1,4 @@
-using Chat.Core.Dto.Chat;
+using Chat.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Chat.Chat.Data;

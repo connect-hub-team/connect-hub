@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Chat.Core.Dto.Chat;
+namespace Chat.Core.Entities;
 
 public class ChainUser
 {

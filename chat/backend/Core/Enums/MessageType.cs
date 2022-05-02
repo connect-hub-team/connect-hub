@@ -1,4 +1,4 @@
-namespace Chat.Core.Dto.Chat;
+namespace Chat.Core.Enums;
 
 public enum MessageType
 {

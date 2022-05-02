@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Chat.Core.Entities.Json;
+using Chat.Core.Enums;
 
-namespace Chat.Core.Dto.Chat;
+namespace Chat.Core.Entities;
 
 /// <summary>
 /// messages chain (dialog or group chat)

@@ -1,4 +1,4 @@
-namespace Chat.Core.Dto.Chat;
+namespace Chat.Core.Entities.Json;
 
 public class ChainContext
 {

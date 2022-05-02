@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Chat.Core.Enums;
 
-namespace Chat.Core.Dto.Chat;
+namespace Chat.Core.Entities;
 
 public class Message
 {
