@@ -26,6 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Migrations" />
+    <Compile Remove="Migrations\**" />
   </ItemGroup>
 </Project>
