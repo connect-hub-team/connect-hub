@@ -21,6 +21,8 @@ builder.Services.AddQuartzHostedService(options =>
   options.WaitForJobsToComplete = true);
 builder.Services.AddHostedService<Worker>();
 
+builder.Services.AddCors();
+
 
 // persistent storage
 builder.Services.AddDbContext<AuthDbContext>(options =>
@@ -98,6 +100,13 @@ app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseRouting();
+app.UseCors(builder 
+  => builder
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .SetIsOriginAllowed((host) => true)
+    .AllowCredentials()
+);
 
 app.UseAuthentication();
 app.UseAuthorization();
