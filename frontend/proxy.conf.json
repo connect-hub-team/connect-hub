@@ -1,0 +1,6 @@
+{
+  "/file": {
+    "target": "http://localhost:5012",
+    "secure": false
+  }
+}

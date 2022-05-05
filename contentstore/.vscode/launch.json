@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "ContentStore (local)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build_contentstore",
+            "program": "${workspaceFolder}/ContentStore/bin/Debug/net6.0/ContentStore.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/ContentStore",
+            "envFile": "${workspaceFolder}/local.env"
+        },
+        {
+            "name": "ContentStore (dev)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build_contentstore",
+            "program": "${workspaceFolder}/ContentStore/bin/Debug/net6.0/ContentStore.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/ContentStore",
+            "envFile": "${workspaceFolder}/dev.env"
+        }
+    ]
+}

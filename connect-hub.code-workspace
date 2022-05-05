@@ -12,6 +12,10 @@
       "name": "chat backend"
     },
     {
+      "path": "contentstore",
+      "name": "contentstore backend"
+    },
+    {
       "path": "frontend",
       "name": "frontend"
     }

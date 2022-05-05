@@ -4,6 +4,7 @@ import { AppComponent } from "./app.component";
 import { AuthGuard } from "./auth/auth.guard";
 import { FirstComponentComponent } from "./components/first-component/first-component.component";
 import { SecondComponentComponent } from "./components/second-component/second-component.component";
+import { UploadComponent } from "./components/upload/upload.component";
 
 const ROUTES: Routes = [
   {
@@ -12,6 +13,7 @@ const ROUTES: Routes = [
     children: [
       { path: 'first-component', component: FirstComponentComponent },
       { path: 'second-component', component: SecondComponentComponent },
+      { path: 'upload', component: UploadComponent },
     ]
   }
 ];

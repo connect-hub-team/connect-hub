@@ -10,12 +10,14 @@ import { AuthGuard } from './auth/auth.guard';
 import { HttpClientModule } from '@angular/common/http';
 import { FirstComponentComponent } from './components/first-component/first-component.component';
 import { SecondComponentComponent } from './components/second-component/second-component.component';
+import { UploadComponent } from './components/upload/upload.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     FirstComponentComponent,
-    SecondComponentComponent
+    SecondComponentComponent,
+    UploadComponent
   ],
   imports: [
     BrowserModule,
