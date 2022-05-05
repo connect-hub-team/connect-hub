@@ -8,12 +8,12 @@
       "name": "auth"
     },
     {
-      "path": "chat/backend",
+      "path": "chat",
       "name": "chat backend"
     },
     {
-      "path": "chat/frontend",
-      "name": "chat frontend"
+      "path": "frontend",
+      "name": "frontend"
     }
 	],
 	"settings": {}
