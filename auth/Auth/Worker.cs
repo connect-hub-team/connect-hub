@@ -42,7 +42,7 @@ public class Worker : IHostedService
           Permissions.Scopes.Profile,
           Permissions.Scopes.Roles,
           // here we'll add scope for microservice access, e.g.
-          //Permissions.Prefixes.Scope + "chat",
+          Permissions.Prefixes.Scope + "chat",
           //Permissions.Prefixes.Scope + "calls",
           //Permissions.Prefixes.Scope + "content",
         }
@@ -56,7 +56,7 @@ public class Worker : IHostedService
       await scopeManager.CreateAsync(new OpenIddictScopeDescriptor()
       {
         Name = "chat",
-        Resources = {"chat"}
+        Resources = { "chat" }
       }, cancellationToken);
     }
 

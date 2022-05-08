@@ -3,6 +3,7 @@ using Chat.Auth.Data;
 using Chat.Auth.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Quartz;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -28,7 +29,7 @@ builder.Services.AddCors();
 builder.Services.AddDbContext<AuthDbContext>(options =>
 {
   // TODO: fuck this shit
-  options.UseNpgsql("Server=127.0.0.1;Port=5432;Database=authdb;User Id=auth;Password=password123;"); 
+  options.UseNpgsql("Server=127.0.0.1;Port=5432;Database=authdb;User Id=auth;Password=password123;");
   options.UseOpenIddict();
 });
 
@@ -69,7 +70,11 @@ builder.Services.AddOpenIddict()
     // for tests here using a symmetric and hardcoded key
     // for prod we should use assymetric key (or even cert) with storage in
     // FastConfig
-    options.AddEphemeralEncryptionKey();
+
+    options.AddEncryptionKey(new SymmetricSecurityKey(
+      Convert.FromBase64String("DRjd/GnduI3Efzen9V9BvbNUfc/VKgXltV7Kbk9sMkY=")));
+
+    //options.AddEphemeralEncryptionKey();
 
     options.AddDevelopmentSigningCertificate();
 
@@ -100,7 +105,7 @@ app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseRouting();
-app.UseCors(builder 
+app.UseCors(builder
   => builder
     .AllowAnyHeader()
     .AllowAnyMethod()

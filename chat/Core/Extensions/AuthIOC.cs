@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server.AspNetCore;
+using OpenIddict.Validation.SystemNetHttp;
 
 namespace Core.Extensions;
 
@@ -13,7 +14,7 @@ public static class AuthIOC
       {
         // TODO: use FastConfig
 
-        options.SetIssuer("https://localhost:7671");
+        options.SetIssuer("https://localhost:7167");
         options.AddAudiences(appId);
 
         options.AddEncryptionKey(new SymmetricSecurityKey(
@@ -22,10 +23,10 @@ public static class AuthIOC
         options.UseSystemNetHttp();
         options.UseAspNetCore();
       });
-    
-    services.AddAuthentication(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-    services.AddAuthorization();
-    
+
+    // services.AddAuthentication(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    // services.AddAuthorization();
+
     return services;
   }
 }
