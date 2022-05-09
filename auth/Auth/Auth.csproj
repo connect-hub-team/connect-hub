@@ -32,4 +32,8 @@
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\fastconfig\csharp_client\FastConfig\FastConfig.csproj" />
+  </ItemGroup>
+
 </Project>

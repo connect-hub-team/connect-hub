@@ -1,13 +1,36 @@
+using System.Text.Json;
 using Chat.Auth;
 using Chat.Auth.Data;
 using Chat.Auth.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using FastConfig;
 using Quartz;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 var builder = WebApplication.CreateBuilder(args);
+var options = new JsonSerializerOptions
+{
+  PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance,
+  Converters =
+  {
+    new CustomHashSetConverter<string>((str) => str),
+    new CustomHashSetConverter<Uri>((str) => new Uri(str)),
+  },
+};
+
+var fastConfig = FastConfigClient.FromEnvironment(
+  address: "http://localhost:5000",
+  appId: "auth",
+  token: "53aecc63-670b-45f6-b529-d46bb4b9e222",
+  serializerOptions: options);
+var config = await fastConfig.Get<Config>();
+
+if (config is null)
+  throw new ApplicationException("Can't fetch config from FastConfig!");
+
+builder.Services.AddFastConfig(fastConfig);
 
 // adding & configure quartz scheduled tasks
 builder.Services.AddQuartz(options =>
@@ -29,7 +52,7 @@ builder.Services.AddCors();
 builder.Services.AddDbContext<AuthDbContext>(options =>
 {
   // TODO: fuck this shit
-  options.UseNpgsql("Server=127.0.0.1;Port=5432;Database=authdb;User Id=auth;Password=password123;");
+  options.UseNpgsql(config.ConnectionString);
   options.UseOpenIddict();
 });
 
@@ -93,12 +116,6 @@ builder.Services.AddOpenIddict()
 
 builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
 
-
-// Add services to the container.
-// builder.Services.AddRazorPages();
-// builder.Services.AddControllersWithViews();
-
-
 var app = builder.Build();
 
 app.UseStaticFiles();
@@ -120,11 +137,5 @@ app.MapControllerRoute(
   pattern: "{controller=Account}/{action=Index}/{id?}"
 );
 app.UseMvc();
-
-// app.UseEndpoints(endpoints =>
-// {
-//   endpoints.MapRazorPages();
-//   endpoints.MapControllers();
-// });
 
 app.Run();
