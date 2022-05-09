@@ -1,18 +1,38 @@
+using System.Text.Json;
 using Chat.Auth;
 using Chat.Auth.Data;
 using Chat.Auth.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Quartz;
 using FastConfig;
+using Quartz;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 const string appId = "auth";
-var fastConfig = FastConfigClient.FromEnvironment(appId: appId);
-var config = await fastConfig.Get<Config>() ?? throw new ArgumentNullException();
+
+var serializerOptions = new JsonSerializerOptions
+{
+  PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance,
+  Converters =
+  {
+    new CustomHashSetConverter<string>((str) => str),
+    new CustomHashSetConverter<Uri>((str) => new Uri(str)),
+  },
+};
+var fastConfig = FastConfigClient.FromEnvironment(
+  appId: appId,
+  serializerOptions: serializerOptions);
+var config = await fastConfig.Get<Config>();
+
+if (config is null)
+  throw new ApplicationException("Can't fetch config from FastConfig!");
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddFastConfig(fastConfig);
+
+
+builder.Services.AddFastConfig(fastConfig);
 
 // adding & configure quartz scheduled tasks
 builder.Services.AddQuartz(options =>
@@ -33,7 +53,8 @@ builder.Services.AddCors();
 // persistent storage
 builder.Services.AddDbContext<AuthDbContext>(options =>
 {
-  options.UseNpgsql(config.Database);
+  // TODO: fuck this shit
+  options.UseNpgsql(config.ConnectionString);
   options.UseOpenIddict();
 });
 
@@ -72,7 +93,7 @@ builder.Services.AddOpenIddict()
       .AllowRefreshTokenFlow();
 
     // for tests here using a symmetric and hardcoded key
-    // for prod we should use assymetric key (or even cert) with storage in
+    // for prod we should use asymetric key (or even cert) with storage in
     // FastConfig
 
     options.AddEncryptionKey(new SymmetricSecurityKey(
@@ -97,12 +118,6 @@ builder.Services.AddOpenIddict()
 
 builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
 
-
-// Add services to the container.
-// builder.Services.AddRazorPages();
-// builder.Services.AddControllersWithViews();
-
-
 var app = builder.Build();
 
 app.UseStaticFiles();
@@ -124,11 +139,5 @@ app.MapControllerRoute(
   pattern: "{controller=Account}/{action=Index}/{id?}"
 );
 app.UseMvc();
-
-// app.UseEndpoints(endpoints =>
-// {
-//   endpoints.MapRazorPages();
-//   endpoints.MapControllers();
-// });
 
 app.Run(config.Urls);
