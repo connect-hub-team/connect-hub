@@ -18,6 +18,10 @@
     {
       "path": "frontend",
       "name": "frontend"
+    },
+    {
+      "path": "docker",
+      "name": "docker scripts"
     }
 	],
 	"settings": {}

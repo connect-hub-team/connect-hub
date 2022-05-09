@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Auth (local)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build_auth",
+            "program": "${workspaceFolder}/Auth/bin/Debug/net6.0/Auth.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Auth",
+            "envFile": "${workspaceFolder}/local.env"
+        },
+        {
+            "name": "Auth (dev)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build_auth",
+            "program": "${workspaceFolder}/Auth/bin/Debug/net6.0/Auth.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Auth",
+            "envFile": "${workspaceFolder}/dev.env"
+        }
+    ]
+}

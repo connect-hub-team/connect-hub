@@ -5,7 +5,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Quartz;
+using FastConfig;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+
+const string appId = "auth";
+var fastConfig = FastConfigClient.FromEnvironment(appId: appId);
+var config = await fastConfig.Get<Config>() ?? throw new ArgumentNullException();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +33,7 @@ builder.Services.AddCors();
 // persistent storage
 builder.Services.AddDbContext<AuthDbContext>(options =>
 {
-  // TODO: fuck this shit
-  options.UseNpgsql("Server=127.0.0.1;Port=5432;Database=authdb;User Id=auth;Password=password123;");
+  options.UseNpgsql(config.Database);
   options.UseOpenIddict();
 });
 
@@ -72,7 +76,7 @@ builder.Services.AddOpenIddict()
     // FastConfig
 
     options.AddEncryptionKey(new SymmetricSecurityKey(
-      Convert.FromBase64String("DRjd/GnduI3Efzen9V9BvbNUfc/VKgXltV7Kbk9sMkY=")));
+      Convert.FromBase64String(config.SymmetricSecurityKey)));
 
     //options.AddEphemeralEncryptionKey();
 
@@ -127,4 +131,4 @@ app.UseMvc();
 //   endpoints.MapControllers();
 // });
 
-app.Run();
+app.Run(config.Urls);
