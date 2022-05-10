@@ -1,0 +1,38 @@
+.dialog-item {
+  padding: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+  align-items: stretch;
+  background-color: white;
+  border-radius: 8px;
+
+  .img {
+    align-self: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+
+  @mixin block {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .center {
+    flex: 1 0 auto;
+    @include block();
+
+    .title {}
+
+    .last-message {}
+  }
+
+  .left {
+    @include block();
+
+    .time {}
+
+    .unread {}
+  }
+}

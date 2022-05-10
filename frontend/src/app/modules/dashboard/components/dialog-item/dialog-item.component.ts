@@ -1,4 +1,5 @@
-import { Component } from "@angular/core";
+import { Component, Input } from "@angular/core";
+import { ChainDto } from "src/app/modules/shared/models/chain";
 
 @Component({
   selector: 'dialog-item',
@@ -7,4 +8,9 @@ import { Component } from "@angular/core";
 })
 export class DialogItemComponent {
 
+  @Input() public dialog!: ChainDto;
+
+  constructor() {
+
+  }
 }

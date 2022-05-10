@@ -1,0 +1,17 @@
+<div class="container">
+  <div class="header">
+    <div class="profile"></div>
+    <input class="search">
+  </div>
+
+  <div class="list">
+    <ng-container *ngIf="dialogs.length > 0; else noDialogs">
+      <dialog-item *ngFor="let dialog of dialogs" [dialog]="dialog">
+      </dialog-item>
+    </ng-container>
+    <ng-template #noDialogs>
+      <h1>У вас пока нет диалогов</h1>
+    </ng-template>
+  </div>
+
+</div>

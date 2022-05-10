@@ -1,0 +1,44 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: stretch;
+  align-items: stretch;
+  border-radius: 12px;
+  background-color: pink;
+
+  .header {
+    margin: 10px;
+    display: flex;
+    flex-direction: row;
+    flex: 0 0 auto;
+    gap: 3px;
+
+    .profile {
+      flex: 0 0 auto;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: gray;
+    }
+
+    .search {
+      padding: 0 12px;
+      border-radius: 12px;
+      outline: none;
+      border: none;
+      width: 100%;
+    }
+  }
+
+  .list {
+    margin: 0 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    flex: 1 0 auto;
+    overflow-y: hidden;
+
+    gap: 5px;
+  }
+}
