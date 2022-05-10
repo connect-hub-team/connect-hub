@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { OAuthService } from "angular-oauth2-oidc";
+import { JwksValidationHandler } from "angular-oauth2-oidc-jwks";
 import { filter, map, Subject } from "rxjs";
 import { authConfig } from "./auth.config";
 
@@ -11,7 +12,10 @@ export class AuthService {
     private oauthService: OAuthService
   ) {
     this.oauthService.configure(authConfig);
-    oauthService.loadDiscoveryDocumentAndLogin();
+  }
+
+  async init() {
+    console.log('loading...');
 
     this.oauthService.events
       .pipe(
@@ -25,5 +29,9 @@ export class AuthService {
         // oauthService.loadUserProfile();
         this.isAuthenticated$.next(true);
       });
+
+    await this.oauthService.loadDiscoveryDocumentAndLogin({
+      customHashFragment: window.location.search
+    });
   }
 }

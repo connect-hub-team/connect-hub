@@ -17,6 +17,6 @@ export class AppComponent {
   constructor(
     private authService: AuthService
   ) {
-
+    authService.init().then(_ => console.log('logged in'));
   }
 }
