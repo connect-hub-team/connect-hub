@@ -1,3 +1,7 @@
+body {
+  background-color: #cccccc;
+}
+
 .container {
   display: flex;
   justify-content: center;
@@ -12,7 +16,6 @@
     gap: 10px;
     flex-direction: row;
     justify-content: stretch;
-    background-color: red;
 
     @mixin element($flex-grow) {
       display: flex;
@@ -21,12 +24,13 @@
     }
 
     .list {
-      background-color: yellow;
+      background-color: white;
+      border-radius: 12px;
       @include element(1);
     }
 
     .dialog {
-      background-color: green;
+      border-radius: 12px;
       @include element(3);
     }
   }

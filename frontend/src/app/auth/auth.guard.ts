@@ -12,7 +12,8 @@ export class AuthGuard implements CanActivate {
   ) { }
 
   canActivate(): boolean {
-    return this.oauthService.hasValidAccessToken();
+    return true;
+    // return this.oauthService.hasValidAccessToken();
   }
 
 }

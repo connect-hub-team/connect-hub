@@ -1,1 +1,43 @@
-<h1>Типо чат</h1>
+<div class="header">
+  <avatar-image class="avatar"
+    [imageUrl]="'https://cdn.sstatic.net/Img/teams/teams-illo-free-sidebar-promo.svg?v=47faa659a05e'"></avatar-image>
+  <div class="title">Иванов Иван</div>
+  <div class="options">
+    <button mat-icon-button [matMenuTriggerFor]="optionsMenu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #optionsMenu="matMenu">
+      <button mat-menu-item>
+        <span>one</span>
+      </button>
+      <button mat-menu-item>
+        <span>two</span>
+      </button>
+      <button mat-menu-item>
+        <span>three</span>
+      </button>
+    </mat-menu>
+  </div>
+</div>
+
+<mat-divider></mat-divider>
+
+<div class="content">
+  <div class="message" *ngFor="let message of dialog.messages">
+    <avatar-image></avatar-image>
+    <div class="bubble app-primary-30">
+      <div class="header">{{ message.author }}</div>
+      <div class="text">{{ message.text }}</div>
+      <div class="time">{{ message.sendAt | date: 'hh:mm' }}</div>
+    </div>
+  </div>
+</div>
+
+<mat-divider></mat-divider>
+
+<div class="footer">
+  <input class="message-input">
+  <button class="send-button" mat-fab color="accent">
+    <mat-icon>send</mat-icon>
+  </button>
+</div>

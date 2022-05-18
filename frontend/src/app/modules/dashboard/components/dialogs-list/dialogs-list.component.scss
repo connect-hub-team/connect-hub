@@ -4,8 +4,7 @@
   flex-grow: 1;
   justify-content: stretch;
   align-items: stretch;
-  border-radius: 12px;
-  background-color: pink;
+  // border-radius: 12px;
 
   .header {
     margin: 10px;
@@ -23,6 +22,7 @@
     }
 
     .search {
+      background-color: #ddd;
       padding: 0 12px;
       border-radius: 12px;
       outline: none;
@@ -35,7 +35,7 @@
     margin: 0 10px;
     display: flex;
     flex-direction: column;
-    justify-content: start;
+    justify-content: flex-start;
     flex: 1 0 auto;
     overflow-y: hidden;
 
